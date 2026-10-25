@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root { min-height: 100%; }
+body { @apply bg-surface text-ink antialiased font-sans; -webkit-tap-highlight-color: transparent; }
+.dark body { @apply bg-surface-dark text-[#EAF2ED]; }
+button { -webkit-tap-highlight-color: transparent; }
+input[type="range"] { accent-color: #1E8E5A; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes sheet { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+.anim-rise { animation: rise .28s ease; }
+.anim-sheet { animation: sheet .28s cubic-bezier(.2,.8,.2,1); }
+.anim-fade { animation: fade .2s ease; }
