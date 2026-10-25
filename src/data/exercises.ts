@@ -211,3 +211,14 @@ export const ABAS_TREINO = [
   { id: "esp", label: "Esportes", mods: ["Futebol", "Beach tennis", "Ciclismo", "Natação"], reg: "Futebol" },
 ] as const;
 export type AbaTreino = (typeof ABAS_TREINO)[number]["id"];
+
+// ===== Semana de treino =====
+export const DIAS_SEMANA = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+export const OPCOES_TREINO = [FUNC_MOD, "Musculação", "Corrida", "Mobilidade", "Futebol", "Beach tennis", "Ciclismo", "Natação", "Descanso"];
+export const AGENDA_PADRAO: Record<string, string> = {
+  "0": "Descanso", "1": FUNC_MOD, "2": "Corrida", "3": FUNC_MOD, "4": "Mobilidade", "5": "Futebol", "6": "Beach tennis",
+};
+export const DURACAO_PADRAO: Record<string, number> = {
+  Mobilidade: 10, Corrida: 30, Futebol: 60, "Beach tennis": 60, Musculação: 60, Ciclismo: 45, Natação: 40, CrossFit: 50,
+};
+export const COM_DISTANCIA = ["Corrida", "Ciclismo", "Natação"];

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from "react";
 import type { AppState, DayData, DiaTreino, Exercicio, HealthScreening, Meal, PlanMeal, Profile, Supplement, User, WeightEntry, Workout } from "../lib/types";
 import { addDays, roundedTotals, todayISO } from "../lib/calc";
+import { AGENDA_PADRAO } from "../data/exercises";
 
 // Mesma chave e documento das versões anteriores: os dados do usuário continuam valendo.
 const STORAGE_KEY = "nutriperform.state.v1";
@@ -42,12 +43,13 @@ export function initialState(): AppState {
     history: [], lastActiveDate: "", onboardingDone: false, theme: "Claro", screen: "hoje",
     planoPersonalizadoAtivo: false, planoPersonalizado: [], treinoPersonalizadoAtivo: false, treinoPersonalizado: [],
     planoSeguidoHoje: false, healthScreening: DEFAULT_HEALTH, dias: {},
+    agenda: { ...AGENDA_PADRAO }, treinoDoDia: {},
   };
 }
 
 const LEGACY_SCREENS: Record<string, string> = {
-  comida: "comer", agua: "comer", plano: "comer", supl: "comer", treino: "treinar",
-  corpo: "progresso", evolucao: "progresso", metas: "progresso", mais: "perfil",
+  comida: "hoje", agua: "hoje", plano: "hoje", supl: "hoje", treino: "hoje", comer: "hoje", treinar: "hoje",
+  corpo: "historico", evolucao: "historico", progresso: "historico", metas: "eu", mais: "eu", perfil: "eu",
 };
 
 function merge(base: AppState, saved: Partial<AppState>): AppState {
@@ -58,6 +60,8 @@ function merge(base: AppState, saved: Partial<AppState>): AppState {
     auth: { ...base.auth, ...(saved.auth ?? {}) },
     healthScreening: { ...base.healthScreening, ...(saved.healthScreening ?? {}) },
     dias: saved.dias ?? {},
+    agenda: { ...AGENDA_PADRAO, ...(saved.agenda ?? {}) },
+    treinoDoDia: saved.treinoDoDia ?? {},
   };
   s.screen = LEGACY_SCREENS[s.screen] ?? s.screen;
   return s;
@@ -161,6 +165,8 @@ export type Action =
   | { type: "SET_PLANO_SEGUIDO_HOJE"; seguido: boolean }
   | { type: "UPDATE_HEALTH_SCREENING"; patch: Partial<HealthScreening> }
   | { type: "APLICAR_DIETA_GERADA"; gastoManualKcal: number; deficit: number; refeicoes: PlanMeal[] }
+  | { type: "SET_AGENDA"; dia: string; mod: string }
+  | { type: "SET_TREINO_DO_DIA"; date: string; mod: string }
   | { type: "REPLACE_STATE"; state: AppState };
 
 function reducer(s: AppState, a: Action): AppState {
@@ -212,6 +218,8 @@ function reducer(s: AppState, a: Action): AppState {
     case "UPDATE_HEALTH_SCREENING": return { ...s, healthScreening: { ...s.healthScreening, ...a.patch } };
     case "APLICAR_DIETA_GERADA":
       return { ...s, gastoManualAtivo: true, gastoManualKcal: a.gastoManualKcal, deficit: a.deficit, planoPersonalizadoAtivo: true, planoPersonalizado: a.refeicoes };
+    case "SET_AGENDA": return { ...s, agenda: { ...(s.agenda ?? AGENDA_PADRAO), [a.dia]: a.mod } };
+    case "SET_TREINO_DO_DIA": return { ...s, treinoDoDia: { ...(s.treinoDoDia ?? {}), [a.date]: a.mod } };
     case "REPLACE_STATE": return a.state;
     default: return s;
   }

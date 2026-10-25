@@ -153,6 +153,10 @@ export interface AppState {
   healthScreening: HealthScreening;
   dias?: Record<string, DayData>;
   diaVisto?: string;
+  /** treino planejado por dia da semana (0=domingo) */
+  agenda?: Record<string, string>;
+  /** troca pontual do treino de uma data (yyyy-mm-dd) */
+  treinoDoDia?: Record<string, string>;
 }
 
 export interface Food {

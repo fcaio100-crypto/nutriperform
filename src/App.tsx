@@ -3,18 +3,17 @@ import { useStore } from "./state/store";
 import { useUi } from "./state/ui";
 import Auth from "./screens/Auth";
 import Hoje from "./screens/Hoje";
-import Comer from "./screens/comer/Comer";
-import Treinar from "./screens/treinar/Treinar";
-import Progresso from "./screens/progresso/Progresso";
-import Perfil from "./screens/perfil/Perfil";
+import Historico from "./screens/Historico";
+import Eu from "./screens/Eu";
 import Onboarding from "./sheets/Onboarding";
 import AddFood from "./sheets/AddFood";
 import Weight from "./sheets/Weight";
 import WorkoutLog from "./sheets/WorkoutLog";
 import Dieta from "./sheets/Dieta";
+import TreinoGuiado from "./sheets/TreinoGuiado";
 import { BottomNav, Toast } from "./components/shell";
 
-const SCREENS: Record<string, () => JSX.Element> = { hoje: Hoje, comer: Comer, treinar: Treinar, progresso: Progresso, perfil: Perfil };
+const SCREENS: Record<string, () => JSX.Element> = { hoje: Hoje, historico: Historico, eu: Eu };
 
 export default function App() {
   const { state } = useStore();
@@ -41,6 +40,7 @@ export default function App() {
       {sheet === "weight" && <Weight />}
       {sheet === "workout" && <WorkoutLog />}
       {sheet === "dieta" && <Dieta />}
+      {sheet === "treino" && <TreinoGuiado />}
     </div>
   );
 }
