@@ -13,6 +13,7 @@ import Dieta from "./sheets/Dieta";
 import TreinoGuiado from "./sheets/TreinoGuiado";
 import { BottomNav, Toast } from "./components/shell";
 import { supabase } from "./lib/supabase";
+import { LogoMark } from "./components/Logo";
 
 const SCREENS: Record<string, () => JSX.Element> = { hoje: Hoje, historico: Historico, eu: Eu };
 
@@ -29,7 +30,7 @@ export default function App() {
   if (supabase && sync === "checking")
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-3">
-        <div className="w-10 h-10 rounded-full border-4 border-brand-soft border-t-brand animate-spin" />
+        <div className="animate-pulse"><LogoMark size={64} /></div>
         <span className="text-[13px] text-ink-mute font-semibold">Carregando seus dados…</span>
       </div>
     );

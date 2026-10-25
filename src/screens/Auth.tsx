@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Leaf } from "lucide-react";
 import { useStore } from "../state/store";
 import { BLOQUEIO_MS, MAX_TENTATIVAS, emailValido, hashPassword, newSalt, regrasSenha } from "../lib/auth";
 import { Button, Card, Field, Input, cx } from "../components/ui";
 import { supabase } from "../lib/supabase";
+import { LogoMark, Wordmark } from "../components/Logo";
 
 type Modo = "login" | "signup" | "forgot";
 
@@ -85,10 +85,10 @@ export default function Auth() {
   return (
     <div className="min-h-screen flex flex-col justify-center px-5 py-10 max-w-[440px] mx-auto gap-6 anim-fade">
       <div className="flex items-center gap-3">
-        <div className="w-11 h-11 rounded-2xl bg-brand flex items-center justify-center text-white"><Leaf size={22} /></div>
+        <LogoMark size={52} />
         <div className="flex flex-col">
-          <span className="font-extrabold text-[18px] tracking-tight">NutriPerform</span>
-          <span className="text-[12px] text-ink-mute font-medium">Nutrição e treino no mesmo lugar</span>
+          <Wordmark className="text-[20px] leading-tight" />
+          <span className="text-[10.5px] text-ink-mute font-bold tracking-[0.18em] uppercase">Treino · Nutrição · Performance</span>
         </div>
       </div>
       <div className="flex flex-col gap-1">

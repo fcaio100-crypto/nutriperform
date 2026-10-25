@@ -8,6 +8,7 @@ import { FUNC_MOD, OPCOES_TREINO } from "../data/exercises";
 import { foodById } from "../data/foods";
 import { Bar, Button, Card, Chips, cx } from "../components/ui";
 import { DayNav, SafetyCard } from "../components/shell";
+import { LogoMark } from "../components/Logo";
 
 const PRINCIPAIS = ["cafe", "almoco", "lt", "jantar"];
 
@@ -16,9 +17,12 @@ export default function Hoje() {
   const nome = state.profile.nome.split(" ")[0];
   return (
     <>
-      <div className="flex flex-col">
-        <span className="text-[13px] text-ink-mute font-semibold">{greeting()}{nome ? `, ${nome}` : ""}</span>
-        <h1 className="font-extrabold text-[26px] tracking-tight leading-tight">Seu dia</h1>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col">
+          <span className="text-[13px] text-ink-mute font-semibold">{greeting()}{nome ? `, ${nome}` : ""}</span>
+          <h1 className="font-extrabold text-[26px] tracking-tight leading-tight">Seu dia</h1>
+        </div>
+        <LogoMark size={40} />
       </div>
       <DayNav />
       <TreinoCard />

@@ -12,8 +12,8 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification(dados.titulo || 'NutriPerform', {
       body: dados.corpo || '',
-      icon: '/icons/icon-192.png?v=4',
-      badge: '/icons/icon-maskable-192.png?v=4',
+      icon: '/icons/icon-192.png?v=5',
+      badge: '/icons/icon-maskable-192.png?v=5',
       tag: dados.tag || undefined,
       renotify: !!dados.tag,
     })
