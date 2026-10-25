@@ -14,3 +14,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     </StoreProvider>
   </React.StrictMode>,
 );
+
+// notificações (app publicado): mantém o service worker de lembretes
+import { supabase } from "./lib/supabase";
+if (supabase && "serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});

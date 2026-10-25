@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useReducer, useRef, useS
 import type { AppState, DayData, DiaTreino, Exercicio, HealthScreening, Meal, PlanMeal, Profile, Supplement, User, WeightEntry, Workout } from "../lib/types";
 import { addDays, roundedTotals, todayISO } from "../lib/calc";
 import { AGENDA_PADRAO } from "../data/exercises";
+import { supabase } from "../lib/supabase";
 
 // Mesma chave e documento das versões anteriores: os dados do usuário continuam valendo.
 const STORAGE_KEY = "nutriperform.state.v1";
@@ -71,7 +72,9 @@ function loadLocal(): AppState {
   const base = initialState();
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? merge(base, JSON.parse(raw)) : base;
+    const s = raw ? merge(base, JSON.parse(raw)) : base;
+    // com Supabase, quem diz se está logado é a sessão da nuvem
+    return supabase ? { ...s, auth: { ...s.auth, currentUserEmail: null } } : s;
   } catch {
     return base;
   }
@@ -242,6 +245,13 @@ function getDb(): Promise<Db | null> {
   return dbPromise;
 }
 
+/** o que vai para a nuvem: tudo, menos contas locais e sessão */
+function paraNuvem(s: AppState) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { users: _u, auth: _a, ...resto } = s;
+  return resto;
+}
+
 export type SyncStatus = "checking" | "synced" | "local-only";
 interface Ctx { state: AppState; dispatch: React.Dispatch<Action>; sync: SyncStatus }
 const StoreCtx = createContext<Ctx | null>(null);
@@ -257,7 +267,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* armazenamento indisponível */ }
   }, [state]);
 
+  // ===== Banco do Claude (quando o app roda dentro do Claude) =====
   useEffect(() => {
+    if (supabase) return;
     let cancel = false;
     (async () => {
       const db = await getDb();
@@ -284,7 +296,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!dbRef.current) return;
+    if (supabase || !dbRef.current) return;
     const json = JSON.stringify(state);
     if (json === lastSent.current) return;
     if (timer.current) clearTimeout(timer.current);
@@ -292,6 +304,63 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       lastSent.current = json;
       dbRef.current?.doc(DB_DOC).set(state).catch(() => {});
     }, 700);
+    return () => { if (timer.current) clearTimeout(timer.current); };
+  }, [state, sync]);
+
+  // ===== Supabase (app publicado): login + tabela app_state, uma linha por usuário =====
+  const sbUser = useRef<string | null>(null);
+  const sbLoading = useRef<string | null>(null);
+  useEffect(() => {
+    if (!supabase) return;
+    const sb = supabase;
+    let cancel = false;
+    async function carregar(uid: string, email: string, nome?: string) {
+      if (sbLoading.current === uid || sbUser.current === uid) return;
+      sbLoading.current = uid;
+      sbUser.current = null;
+      setSync("checking");
+      const { data, error } = await sb.from("app_state").select("state").eq("user_id", uid).maybeSingle();
+      sbLoading.current = null;
+      if (cancel) return;
+      if (error) { setSync("local-only"); return; } // não salva por cima do que está na nuvem
+      const base = initialState();
+      const remoto = data?.state as Partial<AppState> | undefined;
+      const s = remoto ? merge(base, remoto) : { ...base, profile: { ...base.profile, nome: nome ?? "" } };
+      const st: AppState = { ...s, users: [], auth: { currentUserEmail: email, loginTries: 0, lockedUntil: null } };
+      lastSent.current = JSON.stringify(paraNuvem(st));
+      dispatch({ type: "REPLACE_STATE", state: st });
+      dispatch({ type: "ROLLOVER_DAY", today: todayISO() });
+      sbUser.current = uid;
+      setSync("synced");
+    }
+    const { data: sub } = sb.auth.onAuthStateChange((ev, session) => {
+      const u = session?.user;
+      // adia para fora do callback (recomendação do supabase-js)
+      setTimeout(() => {
+        if (u && (ev === "INITIAL_SESSION" || ev === "SIGNED_IN")) carregar(u.id, u.email ?? "", (u.user_metadata as { name?: string })?.name);
+        else if (!u && (ev === "INITIAL_SESSION" || ev === "SIGNED_OUT")) {
+          sbUser.current = null;
+          dispatch({ type: "LOGOUT" });
+          setSync("local-only");
+        }
+      }, 0);
+    });
+    return () => { cancel = true; sub.subscription.unsubscribe(); };
+  }, []);
+
+  useEffect(() => {
+    if (!supabase || !sbUser.current) return;
+    const uid = sbUser.current;
+    const corpo = paraNuvem(state);
+    const json = JSON.stringify(corpo);
+    if (json === lastSent.current) return;
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => {
+      lastSent.current = json;
+      supabase!.from("app_state").upsert({ user_id: uid, state: corpo, updated_at: new Date().toISOString() }, { onConflict: "user_id" }).then(({ error }) => {
+        if (error) { lastSent.current = ""; setSync("local-only"); } else setSync("synced");
+      });
+    }, 800);
     return () => { if (timer.current) clearTimeout(timer.current); };
   }, [state, sync]);
 

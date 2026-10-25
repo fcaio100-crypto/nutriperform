@@ -3,6 +3,7 @@ import { Leaf } from "lucide-react";
 import { useStore } from "../state/store";
 import { BLOQUEIO_MS, MAX_TENTATIVAS, emailValido, hashPassword, newSalt, regrasSenha } from "../lib/auth";
 import { Button, Card, Field, Input, cx } from "../components/ui";
+import { supabase } from "../lib/supabase";
 
 type Modo = "login" | "signup" | "forgot";
 
@@ -23,6 +24,7 @@ export default function Auth() {
   async function enviar() {
     const e = email.trim().toLowerCase();
     if (!emailValido(e)) return setMsg({ t: "Informe um e-mail válido." });
+    if (supabase) return enviarNuvem(e);
     if (modo === "forgot") return setMsg({ t: "Se este e-mail tiver conta, enviaremos um link de redefinição.", ok: true });
     if (bloqueado) return setMsg({ t: "Conta temporariamente bloqueada. Tente em alguns minutos." });
     setBusy(true);
@@ -48,6 +50,31 @@ export default function Auth() {
       }
       dispatch({ type: "LOGIN_SUCCESS", email: u.email });
       dispatch({ type: "UPDATE_PROFILE", patch: { nome: u.name } });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function enviarNuvem(e: string) {
+    const sb = supabase!;
+    setBusy(true);
+    try {
+      if (modo === "forgot") {
+        await sb.auth.resetPasswordForEmail(e, { redirectTo: window.location.origin });
+        return setMsg({ t: "Se este e-mail tiver conta, enviamos um link para redefinir a senha.", ok: true });
+      }
+      if (modo === "signup") {
+        if (!nome.trim()) return setMsg({ t: "Informe o seu nome." });
+        if (regras.some((r) => !r.ok)) return setMsg({ t: "A senha não atende aos requisitos." });
+        if (senha !== conf) return setMsg({ t: "As senhas não coincidem." });
+        if (!aceite) return setMsg({ t: "Aceite os termos e o tratamento de dados de saúde para continuar." });
+        const { data, error } = await sb.auth.signUp({ email: e, password: senha, options: { data: { name: nome.trim() }, emailRedirectTo: window.location.origin } });
+        if (error) return setMsg({ t: error.message.includes("registered") ? "Já existe uma conta com este e-mail." : "Não foi possível criar a conta. Tente de novo." });
+        if (!data.session) return setMsg({ t: "Conta criada! Confirme pelo link que enviamos ao seu e-mail e depois entre.", ok: true });
+        return;
+      }
+      const { error } = await sb.auth.signInWithPassword({ email: e, password: senha });
+      if (error) return setMsg({ t: error.message.toLowerCase().includes("confirm") ? "Confirme seu e-mail antes de entrar." : "E-mail ou senha incorretos." });
     } finally {
       setBusy(false);
     }
@@ -124,7 +151,7 @@ export default function Auth() {
         </button>
       </div>
       <span className="text-[11px] text-ink-mute text-center leading-relaxed">
-        Versão de testes: as contas ficam neste dispositivo e a senha nunca sai dele.
+        {supabase ? "Seus dados ficam salvos na sua conta e aparecem em qualquer aparelho." : "Versão de testes: as contas ficam neste dispositivo e a senha nunca sai dele."}
       </span>
     </div>
   );

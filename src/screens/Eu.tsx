@@ -7,6 +7,7 @@ import { emailValido, hashPassword, newSalt, regrasSenha, senhaForte } from "../
 import { AGENDA_PADRAO, DIAS_SEMANA, OPCOES_TREINO } from "../data/exercises";
 import { Button, Card, Chips, Field, Input, Muted, Select, Toggle, cx } from "../components/ui";
 import { SafetyCard } from "../components/shell";
+import { supabase } from "../lib/supabase";
 import Musculacao from "./eu/Musculacao";
 import Metas from "./eu/Metas";
 import Plano from "./eu/Plano";
@@ -91,7 +92,7 @@ export default function Eu() {
 
       {user?.role === "admin" && <Admin />}
 
-      <Button variant="danger" size="lg" onClick={() => { dispatch({ type: "LOGOUT" }); notify("Você saiu da conta"); }}><LogOut size={17} /> Sair da conta</Button>
+      <Button variant="danger" size="lg" onClick={() => { if (supabase) supabase.auth.signOut(); dispatch({ type: "LOGOUT" }); notify("Você saiu da conta"); }}><LogOut size={17} /> Sair da conta</Button>
     </>
   );
 }

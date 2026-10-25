@@ -12,11 +12,12 @@ import WorkoutLog from "./sheets/WorkoutLog";
 import Dieta from "./sheets/Dieta";
 import TreinoGuiado from "./sheets/TreinoGuiado";
 import { BottomNav, Toast } from "./components/shell";
+import { supabase } from "./lib/supabase";
 
 const SCREENS: Record<string, () => JSX.Element> = { hoje: Hoje, historico: Historico, eu: Eu };
 
 export default function App() {
-  const { state } = useStore();
+  const { state, sync } = useStore();
   const { sheet, openOnboarding } = useUi();
   const logado = !!state.auth.currentUserEmail;
 
@@ -25,6 +26,13 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [logado, state.onboardingDone]);
 
+  if (supabase && sync === "checking")
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3">
+        <div className="w-10 h-10 rounded-full border-4 border-brand-soft border-t-brand animate-spin" />
+        <span className="text-[13px] text-ink-mute font-semibold">Carregando seus dados…</span>
+      </div>
+    );
   if (!logado) return <Auth />;
   const Screen = SCREENS[state.screen] ?? Hoje;
 
