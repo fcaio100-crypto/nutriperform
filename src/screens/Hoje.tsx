@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, ChevronRight, Droplets, Dumbbell, Minus, Moon, Plus, Utensils } from "lucide-react";
+import { Check, ChevronRight, Droplets, Dumbbell, Minus, Moon, Plus, Sparkles, Utensils } from "lucide-react";
 import { useStore, hojeDe, vistoDe } from "../state/store";
 import { useUi } from "../state/ui";
 import { addDays, aguaMetaL, fmtDec, fmtInt, greeting, isoToDM, metasDoEstado, parseISO, totals } from "../lib/calc";
@@ -28,6 +28,7 @@ export default function Hoje() {
       <TreinoCard />
       <ComidaCard />
       <AguaCard />
+      <AssistenteAtalho />
       <Semana />
       <SafetyCard compact />
     </>
@@ -227,5 +228,19 @@ function Semana() {
         })}
       </div>
     </Card>
+  );
+}
+
+function AssistenteAtalho() {
+  const { go } = useUi();
+  return (
+    <button type="button" onClick={() => go("assistente")} className="p-4 rounded-2xl bg-[#0B0F0C] text-white flex items-center gap-3 text-left">
+      <span className="w-11 h-11 rounded-xl bg-[#A3E635] text-[#0B0F0C] flex items-center justify-center flex-none"><Sparkles size={20} /></span>
+      <span className="flex-1 min-w-0">
+        <span className="block font-bold text-[14px]">Pergunte ao assistente</span>
+        <span className="block text-[12px] text-[#B9C4BC] truncate">“O que comer no jantar para bater a proteína?”</span>
+      </span>
+      <ChevronRight size={18} className="text-[#B9C4BC] flex-none" />
+    </button>
   );
 }

@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronLeft, ChevronRight, Home, LineChart, ShieldAlert, ShieldCheck, User } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Home, LineChart, ShieldAlert, ShieldCheck, Sparkles, User } from "lucide-react";
 import { useStore, hojeDe, vistoDe } from "../state/store";
 import { useUi } from "../state/ui";
 import { longDate, metasDoEstado, parseISO, addDays, triagem } from "../lib/calc";
@@ -6,6 +6,7 @@ import { Card, cx } from "./ui";
 
 export const NAV = [
   { id: "hoje", label: "Hoje", icon: Home },
+  { id: "assistente", label: "Assistente", icon: Sparkles },
   { id: "historico", label: "Histórico", icon: LineChart },
   { id: "eu", label: "Eu", icon: User },
 ] as const;
@@ -15,7 +16,7 @@ export function BottomNav() {
   const { go } = useUi();
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-surface-card/95 dark:bg-surface-cardDark/95 backdrop-blur border-t border-line dark:border-line-dark" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
-      <div className="max-w-[560px] mx-auto grid grid-cols-3">
+      <div className="max-w-[560px] mx-auto grid grid-cols-4">
         {NAV.map(({ id, label, icon: Icon }) => {
           const sel = state.screen === id;
           return (

@@ -5,6 +5,7 @@ import Auth from "./screens/Auth";
 import Hoje from "./screens/Hoje";
 import Historico from "./screens/Historico";
 import Eu from "./screens/Eu";
+import Assistente from "./screens/Assistente";
 import Onboarding from "./sheets/Onboarding";
 import AddFood from "./sheets/AddFood";
 import Weight from "./sheets/Weight";
@@ -15,7 +16,7 @@ import { BottomNav, Toast } from "./components/shell";
 import { supabase } from "./lib/supabase";
 import { LogoMark } from "./components/Logo";
 
-const SCREENS: Record<string, () => JSX.Element> = { hoje: Hoje, historico: Historico, eu: Eu };
+const SCREENS: Record<string, () => JSX.Element> = { hoje: Hoje, assistente: Assistente, historico: Historico, eu: Eu };
 
 export default function App() {
   const { state, sync } = useStore();
