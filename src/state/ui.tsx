@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import { useStore } from "./store";
+import type { Workout } from "../lib/types";
 
-export type SheetKind = "food" | "weight" | "workout" | "treino" | "dieta" | "onboarding" | null;
+export type SheetKind = "food" | "weight" | "workout" | "treino" | "dieta" | "onboarding" | "share" | null;
 
 interface UiCtx {
   sheet: SheetKind;
@@ -17,6 +18,9 @@ interface UiCtx {
   openTreino: (mod: string, date: string) => void;
   openDieta: () => void;
   openOnboarding: () => void;
+  /** card do treino para postar (estilo Strava) */
+  openShare: (w: Workout) => void;
+  shareWorkout: Workout | null;
   close: () => void;
   go: (screen: string, sub?: string) => void;
   setSub: (screen: string, sub: string) => void;
@@ -34,6 +38,7 @@ export function UiProvider({ children }: { children: ReactNode }) {
   const [treino, setTreino] = useState<{ mod: string; date: string } | null>(null);
   const [sub, setSubs] = useState<Record<string, string>>({});
   const [toast, setToast] = useState("");
+  const [shareWorkout, setShareWorkout] = useState<Workout | null>(null);
 
   const setSub = useCallback((screen: string, s: string) => {
     setSubs((x) => ({ ...x, [screen]: s }));
@@ -54,7 +59,8 @@ export function UiProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<UiCtx>(
     () => ({
-      sheet, foodMealId, workoutMod, treino, sub, toast, notify, go, setSub,
+      sheet, foodMealId, workoutMod, treino, sub, toast, notify, go, setSub, shareWorkout,
+      openShare: (w) => { setShareWorkout(w); setSheet("share"); },
       openFood: (id) => { setFoodMealId(id ?? null); setSheet("food"); },
       openWeight: () => setSheet("weight"),
       openWorkout: (m) => { setWorkoutMod(m ?? null); setSheet("workout"); },
@@ -63,7 +69,7 @@ export function UiProvider({ children }: { children: ReactNode }) {
       openOnboarding: () => setSheet("onboarding"),
       close: () => setSheet(null),
     }),
-    [sheet, foodMealId, workoutMod, treino, sub, toast, notify, go, setSub],
+    [sheet, foodMealId, workoutMod, treino, sub, toast, notify, go, setSub, shareWorkout],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

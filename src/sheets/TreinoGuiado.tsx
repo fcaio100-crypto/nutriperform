@@ -28,7 +28,7 @@ export default function TreinoGuiado() {
 
 function ComLista({ mod, date }: { mod: string; date: string }) {
   const { state, dispatch } = useStore();
-  const { close, notify } = useUi();
+  const { notify, openShare } = useUi();
   const [feito, setFeito] = useState<Record<string, boolean>>({});
   const [diaIdx, setDiaIdx] = useState<number | undefined>(undefined);
 
@@ -77,7 +77,7 @@ function ComLista({ mod, date }: { mod: string; date: string }) {
   function concluir(sensacao: string) {
     const pse = sensacao === "Fácil" ? 4 : sensacao === "Na medida" ? 6 : 8;
     const w: Workout = {
-      id: Date.now(), modalidade: mod, data: isoToDM(date), hora: nowHM(), duracaoMin: min, intensidade: intensidade(pse),
+      id: Date.now(), modalidade: mod, data: isoToDM(date), dataISO: date, hora: nowHM(), duracaoMin: min, intensidade: intensidade(pse),
       distancia: "—", kcal: mod === FUNC_MOD ? Math.round(min * 7.6) : kcalEstimada(min, pse), pse, sensacao, nivel,
     };
     dispatch({ type: "ADD_WORKOUT", workout: w });
@@ -89,7 +89,7 @@ function ComLista({ mod, date }: { mod: string; date: string }) {
         : depois.max ? "Treino feito! Nível máximo." : `Treino feito! Faltam ${FUNC_META - depois.pts} para subir de nível.`,
       );
     } else notify(`${titulo} feito ✓`);
-    close();
+    openShare(w);
   }
 
   return (
@@ -131,19 +131,17 @@ function ComLista({ mod, date }: { mod: string; date: string }) {
 
 function Atividade({ mod, date }: { mod: string; date: string }) {
   const { dispatch } = useStore();
-  const { close, notify } = useUi();
+  const { openShare, notify } = useUi();
   const [min, setMin] = useState(DURACAO_PADRAO[mod] ?? 45);
   const [pse, setPse] = useState(6);
   const [dist, setDist] = useState("");
   const temDist = COM_DISTANCIA.includes(mod);
 
   function salvar() {
-    dispatch({
-      type: "ADD_WORKOUT",
-      workout: { id: Date.now(), modalidade: mod, data: isoToDM(date), hora: nowHM(), duracaoMin: min, intensidade: intensidade(pse), distancia: temDist && dist.trim() ? dist.trim() : "—", kcal: kcalEstimada(min, pse), pse },
-    });
+    const w: Workout = { id: Date.now(), modalidade: mod, data: isoToDM(date), dataISO: date, hora: nowHM(), duracaoMin: min, intensidade: intensidade(pse), distancia: temDist && dist.trim() ? dist.trim() : "—", kcal: kcalEstimada(min, pse), pse };
+    dispatch({ type: "ADD_WORKOUT", workout: w });
     notify(`${mod} registrado ✓`);
-    close();
+    openShare(w);
   }
 
   return (

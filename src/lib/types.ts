@@ -44,6 +44,11 @@ export interface Workout {
   kcalInformado?: boolean;
   nivel?: number;
   sensacao?: string;
+  /** data completa (yyyy-mm-dd); registros antigos só têm "data" dd/mm */
+  dataISO?: string;
+  titulo?: string;
+  fcMedia?: number;
+  notas?: string;
 }
 
 export interface WeightEntry {

@@ -12,6 +12,7 @@ import Weight from "./sheets/Weight";
 import WorkoutLog from "./sheets/WorkoutLog";
 import Dieta from "./sheets/Dieta";
 import TreinoGuiado from "./sheets/TreinoGuiado";
+import ShareTreino from "./sheets/ShareTreino";
 import { BottomNav, Toast } from "./components/shell";
 import { supabase } from "./lib/supabase";
 import { LogoMark } from "./components/Logo";
@@ -51,6 +52,7 @@ export default function App() {
       {sheet === "workout" && <WorkoutLog />}
       {sheet === "dieta" && <Dieta />}
       {sheet === "treino" && <TreinoGuiado />}
+      {sheet === "share" && <ShareTreino />}
     </div>
   );
 }

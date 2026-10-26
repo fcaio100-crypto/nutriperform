@@ -1,12 +1,14 @@
-import { Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useStore, mealsDeHoje } from "../state/store";
 import { useUi } from "../state/ui";
+import TreinosPainel from "./historico/TreinosPainel";
 import { daysAgoDM, fmtDec, fmtInt, isoToDM, metasDoEstado, roundedTotals } from "../lib/calc";
-import { BarChart, Button, Card, Empty, LineChart, Muted, PageTitle, Pill, SectionLabel } from "../components/ui";
+import { BarChart, Button, Card, LineChart, Muted, PageTitle, SectionLabel, Tabs } from "../components/ui";
 
 export default function Historico() {
-  const { state, dispatch } = useStore();
-  const { openWeight } = useUi();
+  const { state } = useStore();
+  const { openWeight, sub, setSub } = useUi();
+  const aba = sub.historico === "corpo" ? "corpo" : "treinos";
   const p = state.profile;
   const m = metasDoEstado(state);
   const pesos = state.weights.length ? state.weights : [{ data: "hoje", peso: p.peso }];
@@ -23,6 +25,8 @@ export default function Historico() {
   return (
     <>
       <PageTitle title="Histórico" subtitle="Como você está evoluindo" />
+      <Tabs value={aba} onChange={(v) => setSub("historico", v)} items={[{ id: "treinos", label: "Treinos" }, { id: "corpo", label: "Peso e dieta" }]} />
+      {aba === "treinos" ? <TreinosPainel /> : <>
 
       <Card className="p-5 flex flex-col gap-3">
         <div className="flex items-start justify-between">
@@ -49,30 +53,8 @@ export default function Historico() {
         <BarChart data={dias} goal={m.meta} />
         <Muted className="text-[11px]">A linha tracejada é a sua meta ({fmtInt(m.meta)} kcal).</Muted>
       </Card>
+      </>}
 
-      <SectionLabel>Treinos</SectionLabel>
-      {state.workouts.length === 0 ? (
-        <Card><Empty title="Nenhum treino ainda" text="Os treinos que você concluir aparecem aqui." /></Card>
-      ) : (
-        <Card className="divide-y divide-line dark:divide-line-dark">
-          {state.workouts.slice(0, 40).map((w) => (
-            <div key={w.id} className="px-4 py-3 flex items-center justify-between gap-3">
-              <div className="min-w-0 flex flex-col gap-0.5">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="font-bold text-[13.5px]">{w.modalidade}</span>
-                  {w.nivel ? <Pill>Nível {w.nivel}</Pill> : null}
-                  {w.sensacao ? <Pill tone="mute">{w.sensacao}</Pill> : null}
-                </div>
-                <span className="text-[11.5px] text-ink-mute">{w.data} · {w.duracaoMin} min{w.distancia && w.distancia !== "—" && !w.distancia.startsWith("Nível") ? ` · ${w.distancia}` : ""}</span>
-              </div>
-              <div className="flex items-center gap-3 flex-none">
-                <span className="font-mono text-[12px] text-ink-soft">{fmtInt(w.kcal)} kcal</span>
-                <button type="button" aria-label="Apagar" onClick={() => { if (confirm("Apagar este treino?")) dispatch({ type: "REMOVE_WORKOUT", id: w.id }); }} className="text-ink-mute hover:text-danger"><Trash2 size={15} /></button>
-              </div>
-            </div>
-          ))}
-        </Card>
-      )}
     </>
   );
 }
