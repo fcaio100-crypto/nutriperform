@@ -176,8 +176,19 @@ function ItensNomes({ ids }: { ids: string[] }) {
 
 function AguaCard() {
   const { state, dispatch } = useStore();
+  const { notify } = useUi();
+  const [outro, setOutro] = useState(false);
+  const [ml, setMl] = useState("");
   const l = state.waterMl / 1000;
   const meta = aguaMetaL(state);
+  function adicionar() {
+    const v = Number(ml);
+    if (!v) return;
+    dispatch({ type: "ADD_WATER", ml: v });
+    notify(`+${v} ml de água`);
+    setMl("");
+    setOutro(false);
+  }
   return (
     <Card className="p-5 flex flex-col gap-3">
       <div className="flex items-center justify-between">
@@ -188,8 +199,23 @@ function AguaCard() {
       <div className="flex gap-2">
         <button type="button" aria-label="Tirar um copo" onClick={() => dispatch({ type: "ADD_WATER", ml: -250 })} className="w-12 h-12 rounded-xl bg-surface-raised dark:bg-surface-raisedDark text-ink-soft flex items-center justify-center flex-none"><Minus size={18} /></button>
         <button type="button" onClick={() => dispatch({ type: "ADD_WATER", ml: 250 })} className="flex-1 h-12 rounded-xl bg-water text-white font-bold text-[14px] flex items-center justify-center gap-1.5"><Plus size={18} /> 1 copo (250 ml)</button>
-        <button type="button" onClick={() => dispatch({ type: "ADD_WATER", ml: 500 })} className="px-4 h-12 rounded-xl bg-[#E6F0FA] dark:bg-[#132433] text-water font-bold text-[13px] flex-none">+500</button>
+        <button type="button" onClick={() => setOutro(!outro)} className="px-4 h-12 rounded-xl bg-[#E6F0FA] dark:bg-[#132433] text-water font-bold text-[13px] flex-none">Outro</button>
       </div>
+      {outro && (
+        <form onSubmit={(e) => { e.preventDefault(); adicionar(); }} className="flex flex-col gap-2 anim-fade">
+          <div className="flex gap-1.5 flex-wrap">
+            {[150, 200, 300, 350, 500, 750, 1000].map((v) => (
+              <button key={v} type="button" onClick={() => setMl(String(v))} className={cx("px-3 py-2 rounded-lg text-[12.5px] font-bold", ml === String(v) ? "bg-water text-white" : "bg-surface-raised dark:bg-surface-raisedDark text-ink-soft")}>{v >= 1000 ? `${v / 1000} L` : `${v} ml`}</button>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <label className="sr-only" htmlFor="agua-ml">Quantidade de água em ml</label>
+            <input id="agua-ml" autoFocus inputMode="numeric" value={ml} onChange={(e) => setMl(e.target.value.replace(/\D/g, ""))} placeholder="Quantidade em ml (ex.: 400)" className="flex-1 min-w-0 px-3.5 py-3 rounded-xl border border-line dark:border-line-dark bg-surface-raised dark:bg-surface-raisedDark text-[13px] font-medium outline-none focus:border-water" />
+            <button type="submit" disabled={!Number(ml)} className="px-4 rounded-xl bg-water text-white font-bold text-[13px] disabled:opacity-40">Adicionar</button>
+          </div>
+          <button type="button" onClick={() => { const v = Number(ml); if (v) { dispatch({ type: "ADD_WATER", ml: -v }); setMl(""); setOutro(false); } }} disabled={!Number(ml)} className="self-start text-[12px] font-bold text-ink-mute disabled:opacity-40">Tirar essa quantidade</button>
+        </form>
+      )}
     </Card>
   );
 }

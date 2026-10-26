@@ -185,7 +185,7 @@ function reducer(s: AppState, a: Action): AppState {
     }
     case "REMOVE_MEAL_ITEM":
       return { ...s, meals: s.meals.map((m) => (m.id === a.mealId ? { ...m, items: m.items.filter((i) => i.id !== a.itemId) } : m)) };
-    case "ADD_WATER": return { ...s, waterMl: Math.max(0, Math.min(6000, s.waterMl + a.ml)) };
+    case "ADD_WATER": return { ...s, waterMl: Math.max(0, Math.min(10000, s.waterMl + a.ml)) };
     case "SET_GOALS": return { ...s, ...a.patch };
     case "SET_DAY_TYPE": return { ...s, dayType: a.dayType };
     case "TOGGLE_SHOPPING_ITEM": return { ...s, shoppingChecks: { ...s.shoppingChecks, [a.key]: !s.shoppingChecks[a.key] } };
