@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Bell, CalendarDays, ChevronRight, Cloud, CloudOff, Dumbbell, Flame, LogOut, Pill as PillIcon, RefreshCcw, ShieldCheck, User, UserPlus, Utensils } from "lucide-react";
+import { ArrowLeft, Bell, CalendarDays, Stamp, ChevronRight, Cloud, CloudOff, Dumbbell, Flame, LogOut, Pill as PillIcon, RefreshCcw, ShieldCheck, User, UserPlus, Utensils } from "lucide-react";
 import { useStore } from "../state/store";
 import { useUi } from "../state/ui";
 import { ATIVIDADES, OBJETIVOS, PERGUNTAS_SAUDE, fmtInt, metasDoEstado } from "../lib/calc";
@@ -13,6 +13,7 @@ import Metas from "./eu/Metas";
 import Plano from "./eu/Plano";
 import Suplementos from "./eu/Suplementos";
 import Notificacoes from "../components/Notificacoes";
+import MarcaDagua from "./eu/MarcaDagua";
 import { ativoNesteAparelho, instalado } from "../lib/lembretes";
 
 const PAGINAS = {
@@ -22,6 +23,7 @@ const PAGINAS = {
   metas: { t: "Metas e calorias", icon: Flame, C: Metas },
   plano: { t: "Plano alimentar", icon: Utensils, C: Plano },
   supl: { t: "Suplementos", icon: PillIcon, C: Suplementos },
+  marca: { t: "Marca d’água para fotos", icon: Stamp, C: MarcaDagua },
   notif: { t: "Notificações e instalação", icon: Bell, C: Notificacoes },
   saude: { t: "Saúde e segurança", icon: ShieldCheck, C: Saude },
 } as const;
@@ -54,6 +56,7 @@ export default function Eu() {
     metas: `${fmtInt(m.meta)} kcal/dia`,
     plano: state.planoPersonalizadoAtivo ? "Meu plano" : "Sugestão do app",
     supl: `${state.supplements.length} cadastrados`,
+    marca: "Logo NutriPerform nas suas fotos do Insta",
     notif: ativoNesteAparelho() ? "Lembretes ativos neste aparelho" : instalado() ? "Lembretes desativados — toque para ativar" : "Instale o ícone e ative os lembretes",
     saude: "Triagem e avisos",
   };
