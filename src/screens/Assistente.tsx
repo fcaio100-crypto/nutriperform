@@ -3,22 +3,24 @@ import { ArrowUp, Sparkles, Trash2 } from "lucide-react";
 import { useStore, vistoDe } from "../state/store";
 import { useUi } from "../state/ui";
 import { supabase } from "../lib/supabase";
-import { aguaMetaL, fmtInt, intensidade, isoToDM, kcalEstimada, metasDoEstado, nowHM, todayISO, totals, triagem } from "../lib/calc";
+import { aguaMetaL, fmtInt, intensidade, isoToDM, kcalEstimada, metasDoEstado, nowHM, totals, triagem } from "../lib/calc";
 import { treinoPlanejado, treinosDaData } from "../lib/plan";
 import { FOODS, foodById } from "../data/foods";
 import type { AppState } from "../lib/types";
 import type { Action } from "../state/store";
 import { cx } from "../components/ui";
 
-interface Msg { papel: "usuario" | "assistente"; texto: string; erro?: boolean }
-const CHAVE = "nutriperform.chat.v1";
+interface Msg { papel: "usuario" | "assistente"; texto: string; erro?: boolean; id?: number; em?: string }
+interface Linha { id: number; papel: "usuario" | "assistente"; texto: string; acoes: { nome: string; args: Record<string, unknown> }[]; aplicado: boolean; erro: boolean; criado_em: string }
+const CHAVE = "nutriperform.chat.v2";
+const ESPERA_MAX_MS = 3 * 60 * 1000;
 const SUGESTOES = ["Quanto ainda posso comer hoje?", "O que comer antes do treino?", "Bebi 500 ml de água", "Ideia de jantar com bastante proteína"];
 
 function carregar(): Msg[] {
   try {
     const raw = localStorage.getItem(CHAVE);
     const d = raw ? JSON.parse(raw) : null;
-    return d && d.dia === todayISO() && Array.isArray(d.msgs) ? d.msgs : [];
+    return d && Array.isArray(d.msgs) ? d.msgs : [];
   } catch {
     return [];
   }
@@ -121,38 +123,98 @@ export default function Assistente() {
   const fim = useRef<HTMLDivElement>(null);
   const estado = useRef(state);
   estado.current = state;
+  const aplicando = useRef(new Set<number>());
 
   useEffect(() => {
-    try { localStorage.setItem(CHAVE, JSON.stringify({ dia: todayISO(), msgs })); } catch { /* sem armazenamento */ }
+    try { localStorage.setItem(CHAVE, JSON.stringify({ msgs: msgs.filter((m) => m.id).slice(-200) })); } catch { /* sem armazenamento */ }
     fim.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [msgs, busy]);
 
+  /** Busca a conversa salva na nuvem, aplica ações pendentes e diz se ainda há resposta a caminho. */
+  async function sincronizar(): Promise<boolean> {
+    if (!supabase) return false;
+    const { data, error } = await supabase.from("assistente_conversa").select("id,papel,texto,acoes,aplicado,erro,criado_em").order("id", { ascending: false }).limit(200);
+    if (error || !data) return false;
+    const linhas = (data as Linha[]).reverse();
+    const feitos: string[] = [];
+    for (const l of linhas) {
+      if (l.papel !== "assistente" || l.aplicado || !l.acoes?.length || aplicando.current.has(l.id)) continue;
+      aplicando.current.add(l.id);
+      // marca antes de aplicar: se dois aparelhos abrirem juntos, só um aplica
+      const { data: ok } = await supabase.from("assistente_conversa").update({ aplicado: true }).eq("id", l.id).eq("aplicado", false).select("id");
+      if (ok?.length) feitos.push(...aplicar(l.acoes, estado.current, dispatch));
+    }
+    if (feitos.length) notify("Feito: " + feitos.join(", "));
+    setMsgs((atual) => {
+      const locais = atual.filter((m) => !m.id && m.erro); // erros de conexão deste aparelho
+      const nuvem: Msg[] = linhas.map((l) => ({
+        id: l.id, em: l.criado_em, papel: l.papel, erro: l.erro,
+        texto: l.papel === "assistente" && !l.texto.trim() && l.acoes?.length ? "Pronto! Registrei o que você pediu." : l.texto,
+      }));
+      return [...nuvem, ...locais];
+    });
+    const ult = linhas[linhas.length - 1];
+    return !!ult && ult.papel === "usuario" && Date.now() - new Date(ult.criado_em).getTime() < ESPERA_MAX_MS;
+  }
+
+  const acompanhar = useRef<() => void>(() => {});
+  // ao abrir e ao voltar para o app: pega respostas que chegaram enquanto estava fora
+  useEffect(() => {
+    let vivo = true;
+    let timer = 0;
+    const ciclo = async () => {
+      clearTimeout(timer);
+      const pendente = await sincronizar().catch(() => false);
+      if (!vivo) return;
+      setBusy((b) => (pendente ? true : b && enviando.current));
+      if (pendente) timer = window.setTimeout(ciclo, 3000);
+    };
+    acompanhar.current = ciclo;
+    ciclo();
+    const aoVoltar = () => { if (document.visibilityState === "visible") { clearTimeout(timer); ciclo(); } };
+    document.addEventListener("visibilitychange", aoVoltar);
+    return () => { vivo = false; clearTimeout(timer); document.removeEventListener("visibilitychange", aoVoltar); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const enviando = useRef(false);
   async function enviar(pergunta: string) {
     const q = pergunta.trim();
     if (!q || busy) return;
     const historico: Msg[] = [...msgs.filter((m) => !m.erro), { papel: "usuario", texto: q }];
-    setMsgs([...msgs, { papel: "usuario", texto: q }]);
+    setMsgs([...msgs.filter((m) => m.id || !m.erro), { papel: "usuario", texto: q }]);
     setTexto("");
     if (!supabase) {
       setMsgs((x) => [...x, { papel: "assistente", texto: "O assistente funciona no app publicado (nutriperform.vercel.app), com a sua conta.", erro: true }]);
       return;
     }
     setBusy(true);
+    enviando.current = true;
     try {
-      const { data, error } = await supabase.functions.invoke("assistente", { body: { mensagens: historico.map(({ papel, texto }) => ({ papel, texto })), contexto: contexto(estado.current) } });
-      let erro = "";
+      const { error } = await supabase.functions.invoke("assistente", { body: { mensagens: historico.map(({ papel, texto }) => ({ papel, texto })), contexto: contexto(estado.current) } });
       if (error) {
+        let erro = "";
         try { erro = (await (error as { context?: Response }).context?.json())?.erro ?? ""; } catch { /* sem corpo */ }
-        throw new Error(erro || "Não consegui responder agora. Tente de novo em instantes.");
+        // a resposta pode ter sido gerada mesmo assim (ex.: app foi para segundo plano)
+        if (!erro && (await sincronizar().catch(() => false))) { setTimeout(() => acompanhar.current(), 0); return; }
+        if (erro) { await sincronizar().catch(() => false); if (erro.includes("limite de")) setMsgs((x) => [...x, { papel: "assistente", texto: erro, erro: true }]); return; }
+        throw new Error("Sem conexão com o assistente. Sua pergunta fica salva: abra o app de novo em instantes.");
       }
-      const feito = Array.isArray(data?.acoes) && data.acoes.length ? aplicar(data.acoes, estado.current, dispatch) : [];
-      if (feito.length) notify("Feito: " + feito.join(", "));
-      const resp = String(data?.texto || "").trim() || (feito.length ? `Pronto! Registrei: ${feito.join(", ")}.` : "Não entendi. Pode reformular?");
-      setMsgs((x) => [...x, { papel: "assistente", texto: resp }]);
+      await sincronizar();
     } catch (e) {
       setMsgs((x) => [...x, { papel: "assistente", texto: (e as Error).message, erro: true }]);
     } finally {
+      enviando.current = false;
       setBusy(false);
+    }
+  }
+
+  async function limparTudo() {
+    setMsgs([]);
+    if (supabase) {
+      const { data } = await supabase.auth.getSession();
+      const uid = data.session?.user.id;
+      if (uid) await supabase.from("assistente_conversa").delete().eq("user_id", uid);
     }
   }
 
@@ -164,7 +226,7 @@ export default function Assistente() {
           <h1 className="font-extrabold text-[26px] tracking-tight leading-tight">Assistente</h1>
         </div>
         {msgs.length > 0 && (
-          <button type="button" onClick={() => setMsgs([])} className="flex items-center gap-1.5 text-[12.5px] font-bold text-ink-mute py-2"><Trash2 size={15} /> Limpar</button>
+          <button type="button" onClick={() => { if (confirm("Apagar todo o histórico do chat?")) limparTudo(); }} className="flex items-center gap-1.5 text-[12.5px] font-bold text-ink-mute py-2"><Trash2 size={15} /> Limpar</button>
         )}
       </div>
 
