@@ -16,6 +16,7 @@ import ShareTreino from "./sheets/ShareTreino";
 import { BottomNav, Toast } from "./components/shell";
 import { supabase } from "./lib/supabase";
 import { LogoMark } from "./components/Logo";
+import { useSyncLembretes } from "./components/Notificacoes";
 
 const SCREENS: Record<string, () => JSX.Element> = { hoje: Hoje, assistente: Assistente, historico: Historico, eu: Eu };
 
@@ -23,6 +24,7 @@ export default function App() {
   const { state, sync } = useStore();
   const { sheet, openOnboarding } = useUi();
   const logado = !!state.auth.currentUserEmail;
+  useSyncLembretes();
 
   useEffect(() => {
     if (logado && !state.onboardingDone) openOnboarding();

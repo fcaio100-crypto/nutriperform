@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useStore } from "../state/store";
 import { BLOQUEIO_MS, MAX_TENTATIVAS, emailValido, hashPassword, newSalt, regrasSenha } from "../lib/auth";
-import { Button, Card, Field, Input, cx } from "../components/ui";
+import { Button, Card, Collapse, Field, Input, cx } from "../components/ui";
+import { GuiaInstalacao } from "../components/Notificacoes";
+import { instalado } from "../lib/lembretes";
 import { supabase } from "../lib/supabase";
 import { LogoMark, Wordmark } from "../components/Logo";
 
@@ -150,6 +152,11 @@ export default function Auth() {
           {modo === "login" ? "Criar conta" : "Entrar"}
         </button>
       </div>
+      {!instalado() && (
+        <Collapse title="📲 Instalar o app no celular" subtitle="Passo a passo para colocar o ícone na Tela de Início">
+          <GuiaInstalacao compacto />
+        </Collapse>
+      )}
       <span className="text-[11px] text-ink-mute text-center leading-relaxed">
         {supabase ? "Seus dados ficam salvos na sua conta e aparecem em qualquer aparelho." : "Versão de testes: as contas ficam neste dispositivo e a senha nunca sai dele."}
       </span>
