@@ -4,7 +4,8 @@ import { useStore, vistoDe } from "../state/store";
 import { useUi } from "../state/ui";
 import { supabase } from "../lib/supabase";
 import { aguaMetaL, fmtInt, intensidade, isoToDM, kcalEstimada, metasDoEstado, nowHM, totals, triagem } from "../lib/calc";
-import { treinoPlanejado, treinosDaData } from "../lib/plan";
+import { resumoTreino, treinoPlanejado, treinosDaData } from "../lib/plan";
+import { AGENDA_PADRAO, DIAS_SEMANA, NIVEIS, progressoFuncional } from "../data/exercises";
 import { FOODS, foodById } from "../data/foods";
 import type { AppState } from "../lib/types";
 import type { Action } from "../state/store";
@@ -14,7 +15,7 @@ interface Msg { papel: "usuario" | "assistente"; texto: string; erro?: boolean; 
 interface Linha { id: number; papel: "usuario" | "assistente"; texto: string; acoes: { nome: string; args: Record<string, unknown> }[]; aplicado: boolean; erro: boolean; criado_em: string }
 const CHAVE = "nutriperform.chat.v2";
 const ESPERA_MAX_MS = 3 * 60 * 1000;
-const SUGESTOES = ["Quanto ainda posso comer hoje?", "O que comer antes do treino?", "Bebi 500 ml de água", "Ideia de jantar com bastante proteína"];
+const SUGESTOES = ["Monte meu treino de hoje", "O que comer antes do treino?", "Quanto ainda posso comer hoje?", "Fiz o treino de hoje", "Bebi 500 ml de água"];
 
 function carregar(): Msg[] {
   try {
@@ -40,7 +41,10 @@ function contexto(s: AppState) {
     `Metas do dia: ${fmtInt(m.meta)} kcal, proteína ${fmtInt(m.proteina)} g, carboidrato ${fmtInt(m.carboidrato)} g, gordura ${fmtInt(m.gordura)} g, água ${aguaMetaL(s)} L.`,
     `Consumido: ${fmtInt(t.kcal)} kcal, proteína ${fmtInt(t.proteina)} g, carboidrato ${fmtInt(t.carbo)} g, gordura ${fmtInt(t.gordura)} g, água ${(s.waterMl / 1000).toFixed(2)} L.`,
     `Faltam: ${fmtInt(Math.max(0, m.meta - t.kcal))} kcal e ${fmtInt(Math.max(0, m.proteina - t.proteina))} g de proteína.`,
-    `Treino planejado hoje: ${plano}. Feitos hoje: ${feitos.map((w) => `${w.modalidade} ${w.duracaoMin} min`).join(", ") || "nenhum"}.`,
+    `Treino planejado hoje: ${plano} (${resumoTreino(s, plano)}). Feitos hoje: ${feitos.map((w) => `${w.modalidade} ${w.duracaoMin} min`).join(", ") || "nenhum"}.`,
+    `Semana de treino: ${[1, 2, 3, 4, 5, 6, 0].map((d) => `${DIAS_SEMANA[d]}=${(s.agenda ?? AGENDA_PADRAO)[String(d)]}`).join("; ")}.`,
+    `Funcional em casa: nível ${progressoFuncional(s.workouts).nivel} de ${NIVEIS.length}. Tempo por treino: ${p.minutosPorTreino} min. Atividade: ${p.atividade}.`,
+    `Últimos treinos: ${s.workouts.slice(0, 8).map((w) => `${w.data} ${w.modalidade} ${w.duracaoMin} min${w.sensacao ? ` (${w.sensacao})` : ""}`).join("; ") || "nenhum registrado"}.`,
     "Refeições do diário:",
     ...s.meals.map((ml) => `- ${ml.nome} ${ml.hora}: ${ml.items.map((i) => `${foodById(i.foodId).nome} ${i.qtdGramas} g`).join(", ") || "vazia"}`),
   ];
@@ -234,7 +238,7 @@ export default function Assistente() {
         <div className="flex flex-col items-center text-center gap-3 py-6 px-2">
           <span className="w-14 h-14 rounded-2xl bg-brand-soft dark:bg-brand-softDark text-brand flex items-center justify-center"><Sparkles size={26} /></span>
           <span className="font-bold text-[16px]">Como posso ajudar hoje?</span>
-          <span className="text-[13px] text-ink-mute leading-relaxed max-w-[320px]">Uso as suas metas e o que você já registrou. Também posso lançar comida, água, peso e treinos por você — é só me contar.</span>
+          <span className="text-[13px] text-ink-mute leading-relaxed max-w-[320px]">Treino e alimentação juntos: monto treinos, digo o que comer antes e depois e acompanho suas metas. Também lanço comida, água, peso e treinos por você — é só me contar.</span>
         </div>
       )}
 
