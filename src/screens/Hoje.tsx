@@ -4,7 +4,7 @@ import { useStore, hojeDe, vistoDe } from "../state/store";
 import { useUi } from "../state/ui";
 import { addDays, aguaMetaL, fmtDec, fmtInt, greeting, isoToDM, metasDoEstado, parseISO, totals } from "../lib/calc";
 import { resumoTreino, treinoPlanejado, treinosDaData } from "../lib/plan";
-import { FUNC_MOD, OPCOES_TREINO } from "../data/exercises";
+import { OPCOES_TREINO } from "../data/exercises";
 import { foodById } from "../data/foods";
 import { Bar, Button, Card, Chips, cx } from "../components/ui";
 import { DayNav, SafetyCard } from "../components/shell";
@@ -45,8 +45,6 @@ function TreinoCard() {
   const feitos = treinosDaData(state, iso);
   const feitoPlano = feitos.find((w) => w.modalidade === plano);
   const outros = feitos.filter((w) => w !== feitoPlano);
-  const mobFeita = feitos.some((w) => w.modalidade === "Mobilidade");
-  const mostrarMob = plano !== "Mobilidade" && plano !== FUNC_MOD;
 
   return (
     <Card className="p-5 flex flex-col gap-4">
@@ -89,7 +87,7 @@ function TreinoCard() {
         </div>
       )}
 
-      {!trocar && (outros.length > 0 || mostrarMob) && (
+      {!trocar && outros.length > 0 && (
         <div className="flex flex-col border-t border-line dark:border-line-dark pt-1">
           {outros.map((w) => (
             <div key={w.id} className="flex items-center justify-between py-2.5">
@@ -97,14 +95,19 @@ function TreinoCard() {
               <span className="font-mono text-[12px] text-ink-mute">{w.duracaoMin} min</span>
             </div>
           ))}
-          {mostrarMob && !mobFeita && (
-            <button type="button" onClick={() => openTreino("Mobilidade", iso)} className="flex items-center justify-between py-2.5 text-left">
-              <span className="flex items-center gap-2 text-[13px] font-semibold">
-                <span className="w-4 h-4 rounded-full border-2 border-[#C5D1CA] dark:border-[#3A4A41]" /> Mobilidade · 10 min
-              </span>
-              <ChevronRight size={17} className="text-ink-mute" />
-            </button>
-          )}
+        </div>
+      )}
+
+      {!trocar && (
+        <div className="flex flex-col gap-2 border-t border-line dark:border-line-dark pt-3">
+          <span className="text-[12px] font-bold text-ink-mute">Fazer outro treino agora</span>
+          <div className="flex flex-wrap gap-1.5">
+            {OPCOES_TREINO.filter((m) => m !== "Descanso" && m !== plano).map((m) => (
+              <button key={m} type="button" onClick={() => openTreino(m, iso)} className="px-3 py-1.5 rounded-full text-[12px] font-semibold bg-surface-raised dark:bg-surface-raisedDark text-ink-soft">
+                {m}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 

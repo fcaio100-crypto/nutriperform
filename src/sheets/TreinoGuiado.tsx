@@ -31,6 +31,7 @@ function ComLista({ mod, date }: { mod: string; date: string }) {
   const { notify, openShare } = useUi();
   const [feito, setFeito] = useState<Record<string, boolean>>({});
   const [diaIdx, setDiaIdx] = useState<number | undefined>(undefined);
+  const [fora, setFora] = useState<Record<string, boolean>>({});
 
   let titulo = mod;
   let sub = "";
@@ -46,9 +47,23 @@ function ComLista({ mod, date }: { mod: string; date: string }) {
     sub = `Nível ${N.n} · ${N.nome} · ~${N.min} min`;
     min = N.min;
     nivel = N.n;
-    secoes = blocosFuncional(N).map((b, i) => ({ titulo: `${i + 1}. ${b.titulo} · ${b.tempo}`, dica: b.dica, itens: b.itens }));
+    const blocos = blocosFuncional(N);
+    const escolhidos = blocos.filter((b) => !fora[b.id]);
+    secoes = escolhidos.map((b, i) => ({ titulo: `${i + 1}. ${b.titulo} · ${b.tempo}`, dica: b.dica, itens: b.itens }));
+    if (escolhidos.length < blocos.length) {
+      min = Math.max(5, Math.round((N.min * escolhidos.length) / blocos.length));
+      sub = `Nível ${N.n} · ${N.nome} · ~${min} min`;
+    }
     topo = (
       <div className="flex flex-col gap-1.5">
+        <span className="text-[12px] font-bold text-ink-mute">Partes do treino (toque para tirar ou incluir)</span>
+        <div className="flex flex-wrap gap-1.5 mb-1">
+          {blocos.map((b) => (
+            <button key={b.id} type="button" onClick={() => { setFora((x) => ({ ...x, [b.id]: !x[b.id] })); setFeito({}); }} className={cx("px-3 py-1.5 rounded-full text-[12px] font-semibold", fora[b.id] ? "bg-surface-raised dark:bg-surface-raisedDark text-ink-mute line-through" : "bg-brand text-white")}>
+              {b.titulo}
+            </button>
+          ))}
+        </div>
         <Bar pct={P.max ? 100 : (P.pts / FUNC_META) * 100} />
         <Muted className="text-[11.5px]">{P.max ? "Nível máximo." : `${P.pts} de ${FUNC_META} treinos para subir de nível`}</Muted>
       </div>
