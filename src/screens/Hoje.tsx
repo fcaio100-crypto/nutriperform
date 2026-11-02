@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Check, ChevronRight, Droplets, Dumbbell, Minus, Moon, Plus, Sparkles, Utensils } from "lucide-react";
 import { useStore, hojeDe, vistoDe } from "../state/store";
 import { useUi } from "../state/ui";
-import { addDays, aguaMetaL, fmtDec, fmtInt, greeting, isoToDM, metasDoEstado, parseISO, totals } from "../lib/calc";
+import { addDays, aguaMetaL, fmtDec, fmtInt, greeting, intensidade, isoToDM, kcalEstimada, metasDoEstado, nowHM, parseISO, totals } from "../lib/calc";
+import type { Workout } from "../lib/types";
 import { resumoTreino, treinoPlanejado, treinosDaData } from "../lib/plan";
-import { OPCOES_TREINO } from "../data/exercises";
+import { DURACAO_PADRAO, FUNC_MOD, NIVEIS, OPCOES_TREINO, progressoFuncional } from "../data/exercises";
 import { foodById } from "../data/foods";
 import { Bar, Button, Card, Chips, cx } from "../components/ui";
 import { DayNav, SafetyCard } from "../components/shell";
@@ -37,7 +38,7 @@ export default function Hoje() {
 
 function TreinoCard() {
   const { state, dispatch } = useStore();
-  const { openTreino, openWorkout, go } = useUi();
+  const { openTreino, openWorkout, go, notify } = useUi();
   const [trocar, setTrocar] = useState(false);
   const iso = vistoDe(state);
   const ehHoje = iso === hojeDe(state);
@@ -45,6 +46,17 @@ function TreinoCard() {
   const feitos = treinosDaData(state, iso);
   const feitoPlano = feitos.find((w) => w.modalidade === plano);
   const outros = feitos.filter((w) => w !== feitoPlano);
+
+  function marcarFeito(mod: string) {
+    const nivel = mod === FUNC_MOD ? progressoFuncional(state.workouts).nivel : undefined;
+    const min = mod === FUNC_MOD ? NIVEIS[(nivel ?? 1) - 1].min : mod === "Musculação" ? state.profile.minutosPorTreino || 60 : DURACAO_PADRAO[mod] ?? 45;
+    const w: Workout = {
+      id: Date.now(), modalidade: mod, data: isoToDM(iso), dataISO: iso, hora: nowHM(), duracaoMin: min, intensidade: intensidade(6),
+      distancia: "—", kcal: mod === FUNC_MOD ? Math.round(min * 7.6) : kcalEstimada(min, 6), pse: 6, sensacao: "Na medida", nivel,
+    };
+    dispatch({ type: "ADD_WORKOUT", workout: w });
+    notify(`${mod} concluído ✓`);
+  }
 
   return (
     <Card className="p-5 flex flex-col gap-4">
@@ -84,6 +96,7 @@ function TreinoCard() {
             <div className="text-[13px] text-ink-mute mt-0.5">{resumoTreino(state, plano)}</div>
           </div>
           <Button size="lg" onClick={() => openTreino(plano, iso)}>Começar treino</Button>
+          <Button variant="secondary" onClick={() => marcarFeito(plano)}><Check size={16} strokeWidth={3} /> Já fiz — marcar como concluído</Button>
         </div>
       )}
 

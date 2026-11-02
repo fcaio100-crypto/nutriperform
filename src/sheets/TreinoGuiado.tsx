@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Check } from "lucide-react";
 import { useStore } from "../state/store";
 import { useUi } from "../state/ui";
 import { COM_DISTANCIA, DURACAO_PADRAO, FUNC_META, FUNC_MOD, MOBILIDADE, NIVEIS, blocosFuncional, progressoFuncional, type Item } from "../data/exercises";
@@ -32,6 +32,7 @@ function ComLista({ mod, date }: { mod: string; date: string }) {
   const [feito, setFeito] = useState<Record<string, boolean>>({});
   const [diaIdx, setDiaIdx] = useState<number | undefined>(undefined);
   const [fora, setFora] = useState<Record<string, boolean>>({});
+  const [sensacao, setSensacao] = useState("Na medida");
 
   let titulo = mod;
   let sub = "";
@@ -130,14 +131,15 @@ function ComLista({ mod, date }: { mod: string; date: string }) {
 
       <div className="sticky bottom-0 -mx-4 px-4 pt-3 pb-4 bg-surface/95 dark:bg-surface-dark/95 backdrop-blur border-t border-line dark:border-line-dark flex flex-col gap-2.5" style={{ paddingBottom: "max(16px, env(safe-area-inset-bottom))" }}>
         <div className="flex items-center justify-between">
-          <span className="font-bold text-[14px]">Terminou? Como foi?</span>
-          <span className="font-mono text-[12px] text-ink-mute">{marcados}/{total}</span>
+          <span className="font-bold text-[14px]">Como foi o treino?</span>
+          <span className="font-mono text-[12px] text-ink-mute">{marcados}/{total} exercícios</span>
         </div>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-surface-raised dark:bg-surface-raisedDark">
           {["Fácil", "Na medida", "Difícil"].map((s) => (
-            <button key={s} type="button" onClick={() => concluir(s)} disabled={total === 0} className={cx("py-3.5 rounded-xl font-bold text-[13.5px]", s === "Na medida" ? "bg-brand text-white" : "bg-surface-card dark:bg-surface-cardDark border border-line dark:border-line-dark")}>{s}</button>
+            <button key={s} type="button" onClick={() => setSensacao(s)} className={cx("py-2 rounded-lg font-bold text-[12.5px]", sensacao === s ? "bg-surface-card dark:bg-surface-cardDark text-ink dark:text-white shadow-card" : "text-ink-mute")}>{s}</button>
           ))}
         </div>
+        <Button size="lg" onClick={() => concluir(sensacao)}><Check size={18} strokeWidth={3} /> Concluir treino</Button>
         {mod === FUNC_MOD && <Muted className="text-[11px]">Fácil ou Na medida contam ponto para subir de nível. Dois Difícil seguidos voltam um nível.</Muted>}
       </div>
     </>
