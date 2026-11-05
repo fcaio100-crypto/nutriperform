@@ -15,7 +15,7 @@ export default function TreinoGuiado() {
   const { mod, date } = treino;
   const lista = mod === FUNC_MOD || mod === "Mobilidade" || mod === "Musculação";
   return (
-    <div className="fixed inset-0 z-50 bg-surface dark:bg-surface-dark overflow-y-auto anim-fade">
+    <div className="fixed inset-0 z-50 app-bg overflow-y-auto anim-fade">
       <div className="max-w-[560px] mx-auto px-4 pb-10 flex flex-col gap-4" style={{ paddingTop: "max(16px, env(safe-area-inset-top))" }}>
         <button type="button" onClick={close} className="self-start flex items-center gap-1.5 text-[13px] font-bold text-ink-soft py-1">
           <ArrowLeft size={18} /> Voltar
@@ -120,7 +120,7 @@ function ComLista({ mod, date }: { mod: string; date: string }) {
       {secoes.map((s) => (
         <div key={s.titulo} className="flex flex-col gap-1">
           <span className="font-bold text-[12px] tracking-wide uppercase text-ink-mute mt-1">{s.titulo}</span>
-          <div className="px-4 py-1 rounded-2xl bg-surface-card dark:bg-surface-cardDark border border-line dark:border-line-dark">
+          <div className="px-4 py-1 rounded-[22px] glass">
             {s.itens.map(([nome, qtd], j) => {
               const k = s.titulo + j;
               return <ExerciseRow key={k} nome={nome} qtd={qtd} done={!!feito[k]} onToggle={() => setFeito((x) => ({ ...x, [k]: !x[k] }))} />;
@@ -129,7 +129,7 @@ function ComLista({ mod, date }: { mod: string; date: string }) {
         </div>
       ))}
 
-      <div className="sticky bottom-0 -mx-4 px-4 pt-3 pb-4 bg-surface/95 dark:bg-surface-dark/95 backdrop-blur border-t border-line dark:border-line-dark flex flex-col gap-2.5" style={{ paddingBottom: "max(16px, env(safe-area-inset-bottom))" }}>
+      <div className="glass-strong sticky bottom-2 -mx-1 px-4 pt-3 pb-4 rounded-[28px] flex flex-col gap-2.5" style={{ paddingBottom: "max(16px, env(safe-area-inset-bottom))" }}>
         <div className="flex items-center justify-between">
           <span className="font-bold text-[14px]">Como foi o treino?</span>
           <span className="font-mono text-[12px] text-ink-mute">{marcados}/{total} exercícios</span>

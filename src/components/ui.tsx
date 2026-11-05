@@ -6,12 +6,12 @@ export const cx = (...c: (string | false | null | undefined)[]) => c.filter(Bool
 
 export function Card({ children, className = "", onClick, tone = "default" }: { children: ReactNode; className?: string; onClick?: () => void; tone?: "default" | "soft" | "dark" }) {
   const tones = {
-    default: "bg-surface-card dark:bg-surface-cardDark border border-line dark:border-line-dark shadow-card",
+    default: "glass",
     soft: "bg-brand-soft dark:bg-brand-softDark",
     dark: "bg-[#12241A] text-white",
   };
   return (
-    <div onClick={onClick} className={cx("rounded-2xl", tones[tone], onClick && "cursor-pointer active:scale-[.99] transition-transform", className)}>
+    <div onClick={onClick} className={cx("rounded-[22px]", tones[tone], onClick && "cursor-pointer active:scale-[.99] transition-transform", className)}>
       {children}
     </div>
   );
@@ -20,7 +20,7 @@ export function Card({ children, className = "", onClick, tone = "default" }: { 
 export function Button({ children, onClick, variant = "primary", className = "", disabled, size = "md" }: { children: ReactNode; onClick?: () => void; variant?: "primary" | "secondary" | "ghost" | "danger"; className?: string; disabled?: boolean; size?: "sm" | "md" | "lg" }) {
   const v = {
     primary: "bg-brand text-white hover:bg-brand-dark",
-    secondary: "bg-surface-card dark:bg-surface-cardDark border border-line dark:border-line-dark text-ink dark:text-white",
+    secondary: "glass glass-press text-ink dark:text-white",
     ghost: "bg-surface-raised dark:bg-surface-raisedDark text-ink dark:text-white",
     danger: "bg-transparent border border-line dark:border-line-dark text-danger",
   }[variant];
@@ -60,7 +60,7 @@ export function Muted({ children, className = "" }: { children: ReactNode; class
 /** Abas de segundo nível (pílulas roláveis) */
 export function Tabs<T extends string>({ value, onChange, items }: { value: T; onChange: (v: T) => void; items: { id: T; label: string; badge?: number }[] }) {
   return (
-    <div className="flex gap-1.5 overflow-x-auto no-scrollbar -mx-4 px-4 sticky top-0 z-10 py-2 bg-surface/90 dark:bg-surface-dark/90 backdrop-blur">
+    <div className="flex gap-1.5 overflow-x-auto no-scrollbar -mx-4 px-4 sticky top-0 z-10 py-2">
       {items.map((it) => {
         const sel = it.id === value;
         return (
@@ -70,7 +70,7 @@ export function Tabs<T extends string>({ value, onChange, items }: { value: T; o
             onClick={() => onChange(it.id)}
             className={cx(
               "px-4 py-2 rounded-full font-bold text-[12.5px] whitespace-nowrap flex-none flex items-center gap-1.5 transition-colors",
-              sel ? "bg-ink text-white dark:bg-white dark:text-ink" : "bg-surface-card dark:bg-surface-cardDark text-ink-soft dark:text-[#B5C4BB] border border-line dark:border-line-dark",
+              sel ? "bg-ink text-white dark:bg-white dark:text-ink" : "glass glass-press text-ink-soft dark:text-[#B5C4BB]",
             )}
           >
             {it.label}
@@ -182,15 +182,15 @@ export function Empty({ icon, title, text, action }: { icon?: ReactNode; title: 
 
 export function Sheet({ title, onClose, children, footer }: { title: string; onClose: () => void; children: ReactNode; footer?: ReactNode }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 anim-fade" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/25 anim-fade px-2" onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[560px] max-h-[90vh] flex flex-col bg-surface-card dark:bg-surface-cardDark rounded-t-[28px] anim-sheet"
-        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        className="glass-strong w-full max-w-[560px] max-h-[90vh] flex flex-col rounded-[30px] anim-sheet"
+        style={{ marginBottom: "max(8px, env(safe-area-inset-bottom))" }}
       >
         <div className="flex items-center justify-between px-5 pt-4 pb-2">
           <span className="font-extrabold text-[17px]">{title}</span>
-          <button type="button" onClick={onClose} aria-label="Fechar" className="w-8 h-8 rounded-full bg-surface-raised dark:bg-surface-raisedDark flex items-center justify-center text-ink-soft">
+          <button type="button" onClick={onClose} aria-label="Fechar" className="w-8 h-8 rounded-full glass glass-press flex items-center justify-center text-ink-soft">
             <X size={16} />
           </button>
         </div>

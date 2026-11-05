@@ -244,23 +244,23 @@ export default function Assistente() {
 
       <div className="flex flex-col gap-3 flex-1">
         {msgs.map((m, i) => (
-          <div key={i} className={cx("max-w-[86%] px-4 py-3 rounded-2xl text-[13.5px] leading-relaxed", m.papel === "usuario" ? "self-end bg-brand text-white rounded-br-md" : m.erro ? "self-start bg-[#FBE6EA] text-danger dark:bg-[#33141B] rounded-bl-md" : "self-start bg-surface-card dark:bg-surface-cardDark border border-line dark:border-line-dark rounded-bl-md")}>
+          <div key={i} className={cx("max-w-[86%] px-4 py-3 rounded-2xl text-[13.5px] leading-relaxed", m.papel === "usuario" ? "self-end bg-brand text-white rounded-br-md" : m.erro ? "self-start bg-[#FBE6EA] text-danger dark:bg-[#33141B] rounded-bl-md" : "self-start glass rounded-bl-md")}>
             {m.papel === "usuario" ? m.texto : <Texto t={m.texto} />}
           </div>
         ))}
         {busy && (
-          <div className="self-start px-4 py-3 rounded-2xl rounded-bl-md bg-surface-card dark:bg-surface-cardDark border border-line dark:border-line-dark flex gap-1.5">
+          <div className="self-start px-4 py-3 rounded-2xl rounded-bl-md glass flex gap-1.5">
             {[0, 1, 2].map((d) => <span key={d} className="w-2 h-2 rounded-full bg-ink-mute animate-bounce" style={{ animationDelay: `${d * 0.15}s` }} />)}
           </div>
         )}
         <div ref={fim} />
       </div>
 
-      <div className="sticky bottom-24 flex flex-col gap-2 pt-2 bg-surface/95 dark:bg-surface-dark/95 backdrop-blur">
+      <div className="sticky bottom-28 flex flex-col gap-2 pt-2">
         {msgs.length === 0 && (
           <div className="flex gap-1.5 overflow-x-auto no-scrollbar -mx-4 px-4">
             {SUGESTOES.map((s) => (
-              <button key={s} type="button" onClick={() => enviar(s)} className="px-3.5 py-2 rounded-full bg-surface-card dark:bg-surface-cardDark border border-line dark:border-line-dark text-[12.5px] font-semibold whitespace-nowrap flex-none">{s}</button>
+              <button key={s} type="button" onClick={() => enviar(s)} className="glass glass-press px-3.5 py-2 rounded-full text-[12.5px] font-semibold whitespace-nowrap flex-none">{s}</button>
             ))}
           </div>
         )}
@@ -273,9 +273,9 @@ export default function Assistente() {
             onChange={(e) => setTexto(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); enviar(texto); } }}
             placeholder="Ex.: comi 2 pães de queijo no lanche"
-            className="flex-1 resize-none max-h-32 px-4 py-3 rounded-2xl border border-line dark:border-line-dark bg-surface-card dark:bg-surface-cardDark text-[14px] outline-none focus:border-brand"
+            className="flex-1 resize-none max-h-32 px-4 py-3 rounded-[24px] glass text-[14px] outline-none focus:border-brand"
           />
-          <button type="submit" disabled={busy || !texto.trim()} aria-label="Enviar" className="w-12 h-12 rounded-full bg-brand text-white flex items-center justify-center flex-none disabled:opacity-40">
+          <button type="submit" disabled={busy || !texto.trim()} aria-label="Enviar" className="glass-press w-12 h-12 rounded-full bg-brand text-white flex items-center justify-center flex-none disabled:opacity-40 shadow-[0_6px_18px_rgba(30,142,90,.35)]">
             <ArrowUp size={20} />
           </button>
         </form>

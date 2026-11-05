@@ -22,7 +22,7 @@ export default function Onboarding() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-surface dark:bg-surface-dark overflow-y-auto anim-fade">
+    <div className="fixed inset-0 z-50 app-bg overflow-y-auto anim-fade">
       <div className="max-w-[520px] mx-auto px-5 pt-6 pb-10 flex flex-col gap-5 min-h-full">
         <div className="flex items-center justify-between">
           <span className="font-bold text-[12px] text-brand tracking-wide uppercase">Etapa {i + 1} de {ETAPAS.length}</span>
@@ -55,7 +55,7 @@ export default function Onboarding() {
           <Step title="Qual é o seu objetivo?">
             <div className="flex flex-col gap-2">
               {OBJETIVOS.map((o) => (
-                <button key={o} type="button" onClick={() => up({ objetivo: o })} className={cx("p-3.5 rounded-xl text-left font-semibold text-[13px] border-2", p.objetivo === o ? "border-brand bg-brand-soft dark:bg-brand-softDark" : "border-transparent bg-surface-card dark:bg-surface-cardDark")}>{o}</button>
+                <button key={o} type="button" onClick={() => up({ objetivo: o })} className={cx("p-3.5 rounded-xl text-left font-semibold text-[13px] border-2", p.objetivo === o ? "border-brand bg-brand-soft dark:bg-brand-softDark" : "glass border-transparent")}>{o}</button>
               ))}
             </div>
             <Field label="Peso desejado (kg)" hint="Ritmo seguro: 0,25 a 0,75% do peso por semana. O app não incentiva perda rápida.">
@@ -78,7 +78,7 @@ export default function Onboarding() {
             <Field label="Nível de atividade">
               <div className="flex flex-col gap-2">
                 {ATIVIDADES.map(([a, , d]) => (
-                  <button key={a} type="button" onClick={() => up({ atividade: a })} className={cx("p-3 rounded-xl text-left border-2", p.atividade === a ? "border-brand bg-brand-soft dark:bg-brand-softDark" : "border-transparent bg-surface-card dark:bg-surface-cardDark")}>
+                  <button key={a} type="button" onClick={() => up({ atividade: a })} className={cx("p-3 rounded-xl text-left border-2", p.atividade === a ? "border-brand bg-brand-soft dark:bg-brand-softDark" : "glass border-transparent")}>
                     <div className="font-semibold text-[13px]">{a}</div>
                     <div className="text-[11.5px] text-ink-mute">{d}</div>
                   </button>
@@ -131,7 +131,7 @@ function Step({ title, text, children }: { title: string; text?: string; childre
 
 function Res({ l, v }: { l: string; v: string }) {
   return (
-    <div className="p-4 rounded-2xl bg-surface-card dark:bg-surface-cardDark border border-line dark:border-line-dark">
+    <div className="p-4 rounded-2xl glass">
       <div className="text-[11.5px] text-ink-mute font-semibold">{l}</div>
       <div className="font-mono text-[18px] mt-0.5">{v}</div>
     </div>

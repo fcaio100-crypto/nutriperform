@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 html, body, #root { min-height: 100%; }
-body { @apply bg-surface text-ink antialiased font-sans; -webkit-tap-highlight-color: transparent; }
-.dark body { @apply bg-surface-dark text-[#EAF2ED]; }
+body { @apply text-ink antialiased font-sans; -webkit-tap-highlight-color: transparent; }
+.dark body { @apply text-[#EAF2ED]; }
 button { -webkit-tap-highlight-color: transparent; }
 input[type="range"] { accent-color: #1E8E5A; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -16,3 +16,59 @@ input[type="range"] { accent-color: #1E8E5A; }
 .anim-rise { animation: rise .28s ease; }
 .anim-sheet { animation: sheet .28s cubic-bezier(.2,.8,.2,1); }
 .anim-fade { animation: fade .2s ease; }
+
+/* ===== Liquid Glass (versão web do efeito do iOS 26) ===== */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.52);
+  --glass-strong: rgba(255, 255, 255, 0.78);
+  --glass-edge: rgba(255, 255, 255, 0.85);
+  --glass-sheen: rgba(255, 255, 255, 0.55);
+  --glass-shadow: 0 1px 1px rgba(20, 33, 26, 0.04), 0 10px 32px rgba(20, 33, 26, 0.08);
+  --app-bg: #eef4f0;
+  --blob-a: rgba(163, 230, 53, 0.30);
+  --blob-b: rgba(30, 142, 90, 0.20);
+  --blob-c: rgba(59, 130, 196, 0.16);
+}
+.dark {
+  --glass-bg: rgba(24, 34, 28, 0.50);
+  --glass-strong: rgba(22, 31, 26, 0.82);
+  --glass-edge: rgba(255, 255, 255, 0.12);
+  --glass-sheen: rgba(255, 255, 255, 0.10);
+  --glass-shadow: 0 1px 1px rgba(0, 0, 0, 0.2), 0 12px 36px rgba(0, 0, 0, 0.35);
+  --app-bg: #07100b;
+  --blob-a: rgba(163, 230, 53, 0.20);
+  --blob-b: rgba(30, 142, 90, 0.26);
+  --blob-c: rgba(59, 130, 196, 0.14);
+}
+/* fundo com manchas de cor: é o que o vidro "refrata" */
+.app-bg {
+  background-color: var(--app-bg);
+  background-image:
+    radial-gradient(38rem 30rem at 105% -8%, var(--blob-a), transparent 60%),
+    radial-gradient(34rem 30rem at -20% 40%, var(--blob-b), transparent 60%),
+    radial-gradient(30rem 26rem at 110% 100%, var(--blob-c), transparent 60%);
+  background-attachment: fixed;
+}
+
+html { background-color: var(--app-bg); }
+
+.glass, .glass-strong, .glass-tint, .glass-ink {
+  position: relative;
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid var(--glass-edge);
+  box-shadow: inset 0 1px 0 var(--glass-sheen), inset 0 -1px 0 rgba(255, 255, 255, 0.06), var(--glass-shadow);
+}
+.glass { background: linear-gradient(180deg, var(--glass-sheen) -40%, transparent 45%), var(--glass-bg); }
+.glass-strong { background: linear-gradient(180deg, var(--glass-sheen) -40%, transparent 35%), var(--glass-strong); }
+/* vidro com tinta verde (item selecionado) */
+.glass-tint { background: linear-gradient(180deg, rgba(255,255,255,.35) -30%, transparent 50%), rgba(30, 142, 90, 0.16); border-color: rgba(30, 142, 90, 0.25); }
+.dark .glass-tint { background: rgba(163, 230, 53, 0.14); border-color: rgba(163, 230, 53, 0.22); }
+/* vidro escuro (aviso flutuante) */
+.glass-ink { background: rgba(20, 33, 26, 0.72); border-color: rgba(255, 255, 255, 0.14); color: #fff; }
+/* toque: leve "afundar", como o vidro interativo */
+.glass-press { transition: transform .18s ease, box-shadow .18s ease; }
+.glass-press:active { transform: scale(.97); }
+@media (prefers-reduced-transparency: reduce) {
+  .glass, .glass-strong, .glass-tint { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--glass-strong); }
+}
