@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "NutriPerform",
+    "slug": "nutriperform",
+    "scheme": "nutriperform",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#EEF4F0",
+    "ios": {
+      "bundleIdentifier": "app.nutriperform",
+      "supportsTablet": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "app.nutriperform",
+      "adaptiveIcon": {
+        "backgroundColor": "#0B0F0C",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-font",
+      "expo-sharing",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O NutriPerform usa suas fotos para montar o card do treino que você quer postar."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 120,
+          "backgroundColor": "#0B0F0C"
+        }
+      ]
+    ]
+  }
+}
